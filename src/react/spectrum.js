@@ -1,0 +1,7 @@
+import { h, rsetup } from "./rcommon.js";
+import { Provider, defaultTheme, Picker, Item, Checkbox } from "@adobe/react-spectrum";
+rsetup({ name: "React Spectrum",
+  Wrap: ({ children }) => h(Provider, { theme: defaultTheme, colorScheme: "light" }, children),
+  Select: ({ options, value, onChange }) => h(Picker, { label: "Pick", items: options, selectedKey: value, onSelectionChange: onChange }, (o) => h(Item, { key: o.value }, o.label)),
+  Checkbox: ({ i, checked, onChange }) => h(Checkbox, { isSelected: checked, onChange }, `Item ${i}`),
+  openSel: '#dd button[aria-haspopup="listbox"]', optionSel: '[role="option"][data-key="v5"]' });
