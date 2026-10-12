@@ -147,7 +147,7 @@ async function runOnce(browser, page, query, noAnimations) {
   await cdp.send("Performance.enable");
   if (THROTTLE > 1) await cdp.send("Emulation.setCPUThrottlingRate", { rate: THROTTLE });
 
-  await tab.goto(`${origin}/${page}.html${query}`, { waitUntil: "networkidle0", timeout: 120000 });
+  await tab.goto(`${origin}/pages/${page}.html${query}`, { waitUntil: "networkidle0", timeout: 120000 });
   await tab.waitForFunction("window.__ready", { timeout: 60000 });
   await pause(800);
   await tab.evaluate(() => window.__build());

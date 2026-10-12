@@ -35,4 +35,4 @@ EXTRAS=0 npm run measure                  # just the two jobs, which takes aroun
 
 `npm run measure` reuses the last build. Run `npm start` again after changing a package version.
 
-To see a test page yourself, run `npx vite` and open, for example, `http://localhost:5173/wc-ionic.html`. In the browser console, `__build()` adds the select and checkboxes to the page.
+To see a test page yourself, run `npx vite` and open, for example, `http://localhost:5173/pages/wc-ionic.html`. In the browser console, `__build()` adds the select and checkboxes to the page.

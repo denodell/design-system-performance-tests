@@ -9,7 +9,7 @@ export default {
   build: {
     outDir: "dist",
     rollupOptions: {
-      input: Object.fromEntries(pages.map((p) => [p, resolve(import.meta.dirname, `${p}.html`)])),
+      input: Object.fromEntries(pages.map((p) => [p, resolve(import.meta.dirname, `pages/${p}.html`)])),
       // React libraries mark files "use client", which doesn't apply here.
       onwarn(warning, warn) {
         if (warning.code !== "MODULE_LEVEL_DIRECTIVE") warn(warning);
