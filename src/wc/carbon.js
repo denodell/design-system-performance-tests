@@ -4,4 +4,4 @@ import { setup } from "./common.js";
 setup({ name: "Carbon",
   select: (n) => `<cds-dropdown id="dd" title-text="Pick" label="Pick">${Array.from({ length: n }, (_, i) => `<cds-dropdown-item value="v${i}">Option ${i}</cds-dropdown-item>`).join("")}</cds-dropdown>`,
   checkbox: (i) => `<cds-checkbox>Item ${i}</cds-checkbox>`,
-  clickToOpen: "#dd", optionInMenu: "cds-dropdown-item[value=v5]", checkboxes: "cds-checkbox", tick: (c) => (c.checked = true) });
+  clickToOpen: "#dd", optionInMenu: "cds-dropdown-item[value=v5]", checkboxes: "cds-checkbox", check: (c) => (c.checked = true) });

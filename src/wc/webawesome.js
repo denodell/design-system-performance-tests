@@ -6,4 +6,4 @@ import { setup } from "./common.js";
 setup({ name: "Web Awesome",
   select: (n) => `<wa-select id="dd" label="Pick">${Array.from({ length: n }, (_, i) => `<wa-option value="v${i}">Option ${i}</wa-option>`).join("")}</wa-select>`,
   checkbox: (i) => `<wa-checkbox>Item ${i}</wa-checkbox>`,
-  clickToOpen: "#dd", optionInMenu: "wa-option[value=v5]", checkboxes: "wa-checkbox", tick: (c) => (c.checked = true) });
+  clickToOpen: "#dd", optionInMenu: "wa-option[value=v5]", checkboxes: "wa-checkbox", check: (c) => (c.checked = true) });

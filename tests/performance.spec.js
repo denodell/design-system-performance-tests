@@ -10,7 +10,7 @@ const PAGE = process.env.PAGE ?? "wc-carbon";
 
 // The limits. Each team can set its own from what its components measure today.
 const OPEN_BUDGET = 300; // ms the page can stay busy opening a select with 249 options
-const SELECT_ALL_BUDGET = 300; // ms the page can stay busy ticking 100 checkboxes
+const SELECT_ALL_BUDGET = 300; // ms the page can stay busy checking 100 checkboxes
 const FREEZE_LIMIT = 100; // ms, about where a response stops feeling instant
 const DOUBLING_LIMIT = 2.5; // twice the options can take at most this many times as long
 
@@ -98,10 +98,10 @@ test("twice the options takes no more than about twice as long to open", async (
   expect(ratio).toBeLessThan(DOUBLING_LIMIT);
 });
 
-test("ticks 100 checkboxes at once quickly", async ({ page }) => {
+test("checks 100 checkboxes at once quickly", async ({ page }) => {
   const { cdp } = await load(page, { options: 10, checkboxes: 100 });
   const { ms, longestFreeze } = await measure(page, cdp, () => page.evaluate(() => window.__selectAll()), 2500);
-  console.log(`${PAGE}: ticking 100 checkboxes took ${Math.round(ms)}ms, longest freeze ${Math.round(longestFreeze)}ms`);
+  console.log(`${PAGE}: checking 100 checkboxes took ${Math.round(ms)}ms, longest freeze ${Math.round(longestFreeze)}ms`);
   expect.soft(ms).toBeLessThan(SELECT_ALL_BUDGET);
   expect.soft(longestFreeze).toBeLessThan(FREEZE_LIMIT);
 });

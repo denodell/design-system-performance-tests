@@ -11,10 +11,10 @@
 //   clickToOpen    A CSS selector for the element a user clicks to open the select.
 //   optionInMenu   A CSS selector for an option that appears once the menu is open. Used to check it opened.
 //   checkboxes     A CSS selector that matches every checkbox.
-//   tick           Ticks one checkbox, given the element. Usually (c) => (c.checked = true).
+//   check          Checks one checkbox, given the element. Usually (c) => (c.checked = true).
 //
 // The test scripts call the functions this puts on window. They're not meant to be used directly.
-export function setup({ name, select, checkbox, wrap = (html) => html, clickToOpen, optionInMenu, checkboxes, tick }) {
+export function setup({ name, select, checkbox, wrap = (html) => html, clickToOpen, optionInMenu, checkboxes, check }) {
   const params = new URLSearchParams(location.search);
   const optionCount = Number(params.get("n") ?? 249);
   const checkboxCount = Number(params.get("m") ?? 100);
@@ -28,6 +28,6 @@ export function setup({ name, select, checkbox, wrap = (html) => html, clickToOp
   };
   window.__openSel = clickToOpen;
   window.__optionSel = optionInMenu;
-  window.__selectAll = () => document.querySelectorAll(checkboxes).forEach((c) => tick(c));
+  window.__selectAll = () => document.querySelectorAll(checkboxes).forEach((c) => check(c));
   window.__ready = true;
 }

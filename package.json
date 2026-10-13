@@ -2,7 +2,7 @@
   "name": "design-system-performance-tests",
   "private": true,
   "type": "module",
-  "description": "Measures how long ten design systems take to open a country selector and to tick 100 checkboxes at once.",
+  "description": "Measures how long ten design systems take to open a country selector and to check 100 checkboxes at once.",
   "scripts": {
     "build": "vite build",
     "measure": "node measure.mjs",

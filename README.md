@@ -3,7 +3,7 @@
 Tests how quickly design system components handle two everyday jobs in Chrome:
 
 - Opening a country selector with 249 options
-- Ticking 100 checkboxes at once, like a "select all" checkbox in a table showing 100 rows
+- Checking 100 checkboxes at once, like a "select all" checkbox in a table showing 100 rows
 
 The repo has pages for ten design systems: Mantine, Ant Design, MUI and React Spectrum (React), and Carbon, Fluent, Web Awesome, UI5, Spectrum Web Components and Ionic (web components). You can add your own.
 
@@ -19,7 +19,7 @@ The tests in `tests/performance.spec.js` run against one page and pass or fail, 
 
 - the select opens in under 300ms, and the screen never freezes for more than 100ms while it opens
 - opening the select with 250 options takes no more than about twice as long as with 125
-- ticking all 100 checkboxes takes under 300ms, and the screen never freezes for more than 100ms
+- checking all 100 checkboxes takes under 300ms, and the screen never freezes for more than 100ms
 
 The limits are at the top of the test file. Change them to suit your own components.
 
@@ -53,9 +53,9 @@ Each design system needs two files.
      clickToOpen: "#dd",
      // An option that appears once the menu is open.
      optionInMenu: "acme-option[value=v5]",
-     // Every checkbox, and how to tick one.
+     // Every checkbox, and how to check one.
      checkboxes: "acme-checkbox",
-     tick: (c) => (c.checked = true),
+     check: (c) => (c.checked = true),
    });
    ```
 

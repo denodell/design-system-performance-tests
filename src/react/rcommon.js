@@ -1,7 +1,7 @@
 // Sets up a test page for a React design system.
 //
 // The page renders a select with 249 options and 100 checkboxes, with a "select all" that
-// ticks them all in one state update, the way an app would. Add ?n=50 to the page's address
+// checks them all in one state update, the way an app would. Add ?n=50 to the page's address
 // for a different number of options, and ?m=10 for a different number of checkboxes.
 //
 // Options:
@@ -29,10 +29,10 @@ export function rsetup({ name, Wrap = ({ children }) => children, Select, Checkb
     const [checked, setChecked] = useState(() => Array(checkboxCount).fill(false));
     const [value, setValue] = useState(null);
     window.__setAll = () => setChecked(Array(checkboxCount).fill(true));
-    const tickOne = (i) => (v) => setChecked((all) => all.map((x, j) => (j === i ? v : x)));
+    const checkOne = (i) => (v) => setChecked((all) => all.map((x, j) => (j === i ? v : x)));
     return h(Wrap, null,
       h("div", { id: "dd" }, h(Select, { options, value, onChange: setValue })),
-      h("div", { id: "boxes" }, checked.map((c, i) => h(Checkbox, { key: i, i, checked: c, onChange: tickOne(i) }))));
+      h("div", { id: "boxes" }, checked.map((c, i) => h(Checkbox, { key: i, i, checked: c, onChange: checkOne(i) }))));
   }
 
   window.__lib = name;
