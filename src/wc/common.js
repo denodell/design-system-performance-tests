@@ -1,18 +1,33 @@
-// Shared test: build a dropdown with N options and M checkboxes, then hand control to the harness.
-export function setup({ name, dropdown, checkbox, wrap = (html) => html, openSel, optionSel, checkboxSel, setChecked }) {
-  const q = new URLSearchParams(location.search); const N = +(q.get("n") ?? 249), M = +(q.get("m") ?? 100);
+// Sets up a test page for a web component design system.
+//
+// The page builds a select with 249 options and 100 checkboxes. Add ?n=50 to the page's
+// address for a different number of options, and ?m=10 for a different number of checkboxes.
+//
+// Options:
+//   name           The design system's name, as it appears in the results.
+//   select         Returns the HTML for a select with n options. Give the select id="dd".
+//   checkbox       Returns the HTML for checkbox number i.
+//   wrap           Optional. Wraps all the HTML, for design systems that need a theme element around it.
+//   clickToOpen    A CSS selector for the element a user clicks to open the select.
+//   optionInMenu   A CSS selector for an option that appears once the menu is open. Used to check it opened.
+//   checkboxes     A CSS selector that matches every checkbox.
+//   tick           Ticks one checkbox, given the element. Usually (c) => (c.checked = true).
+//
+// The test scripts call the functions this puts on window. They're not meant to be used directly.
+export function setup({ name, select, checkbox, wrap = (html) => html, clickToOpen, optionInMenu, checkboxes, tick }) {
+  const params = new URLSearchParams(location.search);
+  const optionCount = Number(params.get("n") ?? 249);
+  const checkboxCount = Number(params.get("m") ?? 100);
+
   window.__lib = name;
   window.__build = () => {
     const host = document.createElement("div");
-    host.innerHTML = wrap(dropdown(N) + `<div id="boxes">${Array.from({ length: M }, (_, i) => checkbox(i)).join("")}</div>`);
+    const boxes = Array.from({ length: checkboxCount }, (_, i) => checkbox(i)).join("");
+    host.innerHTML = wrap(select(optionCount) + `<div id="boxes">${boxes}</div>`);
     document.body.append(host);
   };
-  window.__openSel = openSel;
-  window.__optionSel = optionSel;
-  window.__selectAll = () => document.querySelectorAll(checkboxSel).forEach((c) => setChecked(c));
-  // Event Timing: how long each user interaction took, including rendering and paint.
-  window.__events = [];
-  new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__events.push({ type: e.name, dur: e.duration, start: e.startTime }); })
-    .observe({ type: "event", durationThreshold: 16, buffered: true });
+  window.__openSel = clickToOpen;
+  window.__optionSel = optionInMenu;
+  window.__selectAll = () => document.querySelectorAll(checkboxes).forEach((c) => tick(c));
   window.__ready = true;
 }

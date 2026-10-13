@@ -4,6 +4,6 @@ import "@awesome.me/webawesome/dist/components/option/option.js";
 import "@awesome.me/webawesome/dist/components/checkbox/checkbox.js";
 import { setup } from "./common.js";
 setup({ name: "Web Awesome",
-  dropdown: (n) => `<wa-select id="dd" label="Pick">${Array.from({ length: n }, (_, i) => `<wa-option value="v${i}">Option ${i}</wa-option>`).join("")}</wa-select>`,
+  select: (n) => `<wa-select id="dd" label="Pick">${Array.from({ length: n }, (_, i) => `<wa-option value="v${i}">Option ${i}</wa-option>`).join("")}</wa-select>`,
   checkbox: (i) => `<wa-checkbox>Item ${i}</wa-checkbox>`,
-  openSel: "#dd", optionSel: "wa-option[value=v5]", checkboxSel: "wa-checkbox", setChecked: (c) => (c.checked = true) });
+  clickToOpen: "#dd", optionInMenu: "wa-option[value=v5]", checkboxes: "wa-checkbox", tick: (c) => (c.checked = true) });

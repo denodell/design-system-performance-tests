@@ -6,6 +6,6 @@ import "@spectrum-web-components/checkbox/sp-checkbox.js";
 import { setup } from "./common.js";
 setup({ name: "Spectrum",
   wrap: (h) => `<sp-theme system="spectrum" color="light" scale="medium">${h}</sp-theme>`,
-  dropdown: (n) => `<sp-picker id="dd" label="Pick">${Array.from({ length: n }, (_, i) => `<sp-menu-item value="v${i}">Option ${i}</sp-menu-item>`).join("")}</sp-picker>`,
+  select: (n) => `<sp-picker id="dd" label="Pick">${Array.from({ length: n }, (_, i) => `<sp-menu-item value="v${i}">Option ${i}</sp-menu-item>`).join("")}</sp-picker>`,
   checkbox: (i) => `<sp-checkbox>Item ${i}</sp-checkbox>`,
-  openSel: "#dd", optionSel: "sp-menu-item[value=v5]", checkboxSel: "sp-checkbox", setChecked: (c) => (c.checked = true) });
+  clickToOpen: "#dd", optionInMenu: "sp-menu-item[value=v5]", checkboxes: "sp-checkbox", tick: (c) => (c.checked = true) });

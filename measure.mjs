@@ -26,11 +26,15 @@ const root = path.join(import.meta.dirname, "dist");
 // Uses the Chrome that `npm install` downloaded. Set DS_PERF_CHROME to use a different one.
 const chromePath = process.env.DS_PERF_CHROME || undefined;
 
-const pages = [
-  ["react-mantine", "Mantine"], ["react-antd", "Ant Design"], ["react-mui", "MUI"], ["react-spectrum", "React Spectrum"],
-  ["wc-carbon", "Carbon"], ["wc-fluent", "Fluent"], ["wc-webawesome", "Web Awesome"], ["wc-ui5", "UI5"],
-  ["wc-spectrum", "Spectrum"], ["wc-ionic", "Ionic"],
-].filter(([page]) => !process.env.ONLY || process.env.ONLY.split(",").includes(page));
+// Every page in the pages folder, named by its <title>.
+const pagesDir = path.join(import.meta.dirname, "pages");
+const pages = fs.readdirSync(pagesDir)
+  .filter((file) => file.endsWith(".html"))
+  .map((file) => {
+    const html = fs.readFileSync(path.join(pagesDir, file), "utf8");
+    return [file.replace(".html", ""), html.match(/<title>(.*?)<\/title>/)?.[1] ?? file];
+  })
+  .filter(([page]) => !process.env.ONLY || process.env.ONLY.split(",").includes(page));
 
 if (!fs.existsSync(root)) {
   console.error("No dist folder. Run `npm run build` first, or `npm start` to build and measure.");
@@ -272,8 +276,8 @@ if (extras && results["react-antd"]) {
 
 server.close();
 
-const table = (prefix, title) => {
-  const rows = Object.entries(results).filter(([page]) => page.startsWith(prefix));
+const table = (prefix, title, include = (page) => page.startsWith(prefix)) => {
+  const rows = Object.entries(results).filter(([page]) => include(page));
   if (!rows.length) return;
   console.log(`\n${title}\n`);
   console.log("| Design system | Opening a country selector | Longest freeze | Selecting all 100 rows | Longest freeze |");
@@ -284,6 +288,7 @@ const table = (prefix, title) => {
 };
 table("react-", "React design systems");
 table("wc-", "Web component design systems");
+table("", "Other design systems", (page) => !page.startsWith("react-") && !page.startsWith("wc-"));
 if (Object.keys(small).length) {
   console.log("\nOpening with 50 options");
   for (const [page, value] of Object.entries(small)) console.log(`  ${results[page].name}: ${ms(value.open)}, longest freeze ${freezeMs(value.freeze)}`);

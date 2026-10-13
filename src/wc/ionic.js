@@ -9,6 +9,6 @@ import { setup } from "./common.js";
 initialize();
 defSelect(); defOption(); defPopover(); defSelectPopover(); defCheckbox();
 setup({ name: "Ionic",
-  dropdown: (n) => `<ion-select id="dd" label="Pick" interface="popover">${Array.from({ length: n }, (_, i) => `<ion-select-option value="v${i}">Option ${i}</ion-select-option>`).join("")}</ion-select>`,
+  select: (n) => `<ion-select id="dd" label="Pick" interface="popover">${Array.from({ length: n }, (_, i) => `<ion-select-option value="v${i}">Option ${i}</ion-select-option>`).join("")}</ion-select>`,
   checkbox: (i) => `<ion-checkbox>Item ${i}</ion-checkbox>`,
-  openSel: "#dd", optionSel: "ion-select-popover ion-radio[value=v5], ion-popover ion-item:nth-of-type(6)", checkboxSel: "ion-checkbox", setChecked: (c) => (c.checked = true) });
+  clickToOpen: "#dd", optionInMenu: "ion-select-popover ion-radio[value=v5], ion-popover ion-item:nth-of-type(6)", checkboxes: "ion-checkbox", tick: (c) => (c.checked = true) });
