@@ -37,24 +37,24 @@ Each design system needs two files.
 1. A setup file in `src`, which tells the page how to draw your select and checkboxes. For web components it looks like this:
 
    ```js
-   // src/wc/acme.js
-   import "@acme/components/select.js";
-   import "@acme/components/checkbox.js";
+   // src/wc/nettle.js
+   import "@nettle/components/select.js";
+   import "@nettle/components/checkbox.js";
    import { setup } from "./common.js";
 
    setup({
-     name: "Acme",
+     name: "Nettle",
      // HTML for a select with n options. Give the select id="dd".
-     select: (n) => `<acme-select id="dd">${Array.from({ length: n }, (_, i) =>
-       `<acme-option value="v${i}">Option ${i}</acme-option>`).join("")}</acme-select>`,
+     select: (n) => `<nettle-select id="dd">${Array.from({ length: n }, (_, i) =>
+       `<nettle-option value="v${i}">Option ${i}</nettle-option>`).join("")}</nettle-select>`,
      // HTML for checkbox number i.
-     checkbox: (i) => `<acme-checkbox>Item ${i}</acme-checkbox>`,
+     checkbox: (i) => `<nettle-checkbox>Item ${i}</nettle-checkbox>`,
      // What a user clicks to open the select.
      clickToOpen: "#dd",
      // An option that appears once the menu is open.
-     optionInMenu: "acme-option[value=v5]",
+     optionInMenu: "nettle-option[value=v5]",
      // Every checkbox, and how to check one.
-     checkboxes: "acme-checkbox",
+     checkboxes: "nettle-checkbox",
      check: (c) => (c.checked = true),
    });
    ```
@@ -66,14 +66,14 @@ Each design system needs two files.
    ```html
    <!doctype html>
    <meta charset="utf-8">
-   <title>Acme</title>
+   <title>Nettle</title>
    <body>
-   <script type="module" src="../src/wc/acme.js"></script>
+   <script type="module" src="../src/wc/nettle.js"></script>
    ```
 
-   The `<title>` is the name shown in the results. Name the file `wc-` or `react-` followed by your design system's name, such as `wc-acme.html`, so the results group it with the others.
+   The `<title>` is the name shown in the results. Name the file `wc-` or `react-` followed by your design system's name, such as `wc-nettle.html`, so the results group it with the others.
 
-Then install your design system with npm and run `PAGE=wc-acme npm test`.
+Then install your design system with npm and run `PAGE=wc-nettle npm test`.
 
 ### Run the tests on every pull request
 
@@ -94,7 +94,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm test
         env:
-          PAGE: wc-acme
+          PAGE: wc-nettle
 ```
 
 CI machines are often slower than a laptop, so a component can pass on your laptop and go over a time limit in CI. Run the tests in CI a few times before you set the limits. The test that compares 125 options with 250 is the most reliable there, because both runs slow down together.
@@ -103,7 +103,7 @@ This repo's own workflow, in `.github/workflows/test.yml`, runs the tests agains
 
 ### See a page in the browser
 
-To see a page yourself, run `npx vite` and open, for example, `http://localhost:5173/pages/wc-acme.html`. In the browser console, `__build()` adds the select and checkboxes to the page.
+To see a page yourself, run `npx vite` and open, for example, `http://localhost:5173/pages/wc-nettle.html`. In the browser console, `__build()` adds the select and checkboxes to the page.
 
 ## Compare design systems
 
