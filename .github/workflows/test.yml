@@ -16,7 +16,7 @@ jobs:
     outputs:
       pages: ${{ steps.list.outputs.pages }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - id: list
         run: echo "pages=$(ls pages/*.html | xargs -n1 basename -s .html | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
 
@@ -32,8 +32,8 @@ jobs:
       # The tests use Playwright's Chrome, so skip the one the comparison script downloads.
       PUPPETEER_SKIP_DOWNLOAD: "true"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
