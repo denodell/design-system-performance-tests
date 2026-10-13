@@ -1,4 +1,4 @@
-// Opens each design system's test page in Chrome and measures two jobs:
+// Opens each design system's test page in Chrome and measures two tasks:
 // opening a select with 249 options, and checking 100 checkboxes at once.
 // Each number is how long the main thread stayed busy afterwards, as the median of several runs.
 //

@@ -1,6 +1,6 @@
 # Design system performance tests
 
-Tests how quickly design system components handle two everyday jobs in Chrome:
+Tests how quickly design system components handle two tasks that real apps do all the time, in Chrome:
 
 - Opening a country selector with 249 options
 - Checking 100 checkboxes at once, like a "select all" checkbox in a table showing 100 rows
@@ -119,7 +119,7 @@ npm start
 RUNS=5 npm run measure                    # more runs per design system
 THROTTLE=1 npm run measure                # full CPU speed
 ONLY=wc-ionic,wc-fluent npm run measure   # just these pages
-EXTRAS=0 npm run measure                  # just the two jobs, which takes around 30 minutes
+EXTRAS=0 npm run measure                  # just the two tasks, which takes around 30 minutes
 ```
 
 `npm run measure` reuses the last build. Run `npm start` again after changing a package version.
