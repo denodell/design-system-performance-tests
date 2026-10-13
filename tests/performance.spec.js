@@ -1,12 +1,16 @@
 // Performance tests for one design system's test page.
 // Run them with the page's file name, for example: PAGE=wc-carbon npm test
+// Set REPORT_ONLY=1 to print the numbers without failing on the limits. The tests still fail
+// if the page doesn't work, such as a select that doesn't open.
 //
 // Each test slows the CPU down four times, roughly matching a mid-range phone, and measures:
 // - how long the browser's main thread stays busy after the action, from Chrome's TaskDuration
 // - the longest single frame, from the Long Animation Frames API, which is how long the screen froze
+import { appendFileSync } from "node:fs";
 import { test, expect } from "@playwright/test";
 
 const PAGE = process.env.PAGE ?? "wc-carbon";
+const REPORT_ONLY = Boolean(process.env.REPORT_ONLY);
 
 // The limits. Each team can set its own from what its components measure today.
 const OPEN_BUDGET = 300; // ms the page can stay busy opening a select with 249 options
@@ -15,6 +19,17 @@ const FREEZE_LIMIT = 100; // ms, about where a response stops feeling instant
 const DOUBLING_LIMIT = 2.5; // twice the options can take at most this many times as long
 
 const THROTTLE = 4;
+
+// Checks a number against its limit, unless REPORT_ONLY is set.
+function within(value, limit) {
+  if (!REPORT_ONLY) expect.soft(value).toBeLessThan(limit);
+}
+
+// Prints a result, and adds it to the run's summary page when running on GitHub Actions.
+function report(line) {
+  console.log(`${PAGE}: ${line}`);
+  if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `- ${line}\n`);
+}
 
 // Opens the test page with the given number of options and checkboxes, and adds them to the page.
 async function load(page, { options, checkboxes }) {
@@ -78,9 +93,9 @@ async function openSelect(page, options) {
 
 test("opens a select with 249 options quickly", async ({ page }) => {
   const { ms, longestFreeze } = await openSelect(page, 249);
-  console.log(`${PAGE}: opening took ${Math.round(ms)}ms, longest freeze ${Math.round(longestFreeze)}ms`);
-  expect.soft(ms).toBeLessThan(OPEN_BUDGET);
-  expect.soft(longestFreeze).toBeLessThan(FREEZE_LIMIT);
+  report(`Opening a select with 249 options took ${Math.round(ms)}ms, longest freeze ${Math.round(longestFreeze)}ms`);
+  within(ms, OPEN_BUDGET);
+  within(longestFreeze, FREEZE_LIMIT);
 });
 
 test("twice the options takes no more than about twice as long to open", async ({ page }) => {
@@ -94,14 +109,14 @@ test("twice the options takes no more than about twice as long to open", async (
   const small = await time(125);
   const large = await time(250);
   const ratio = large / small;
-  console.log(`${PAGE}: 125 options took ${Math.round(small)}ms, 250 took ${Math.round(large)}ms (${ratio.toFixed(1)} times as long)`);
-  expect(ratio).toBeLessThan(DOUBLING_LIMIT);
+  report(`Opening with 125 options took ${Math.round(small)}ms, and with 250 took ${Math.round(large)}ms (${ratio.toFixed(1)} times as long)`);
+  within(ratio, DOUBLING_LIMIT);
 });
 
 test("checks 100 checkboxes at once quickly", async ({ page }) => {
   const { cdp } = await load(page, { options: 10, checkboxes: 100 });
   const { ms, longestFreeze } = await measure(page, cdp, () => page.evaluate(() => window.__selectAll()), 2500);
-  console.log(`${PAGE}: checking 100 checkboxes took ${Math.round(ms)}ms, longest freeze ${Math.round(longestFreeze)}ms`);
-  expect.soft(ms).toBeLessThan(SELECT_ALL_BUDGET);
-  expect.soft(longestFreeze).toBeLessThan(FREEZE_LIMIT);
+  report(`Checking 100 checkboxes took ${Math.round(ms)}ms, longest freeze ${Math.round(longestFreeze)}ms`);
+  within(ms, SELECT_ALL_BUDGET);
+  within(longestFreeze, FREEZE_LIMIT);
 });

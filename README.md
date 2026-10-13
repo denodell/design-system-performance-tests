@@ -21,7 +21,7 @@ The tests in `tests/performance.spec.js` run against one page and pass or fail, 
 - opening the select with 250 options takes no more than about twice as long as with 125
 - checking all 100 checkboxes takes under 300ms, and the screen never freezes for more than 100ms
 
-The limits are at the top of the test file. Change them to suit your own components.
+The limits are at the top of the test file. Change them to suit your own components. To print the numbers without failing on the limits, set `REPORT_ONLY=1`.
 
 Run the tests against a page by its file name:
 
@@ -74,6 +74,34 @@ Each design system needs two files.
    The `<title>` is the name shown in the results. Name the file `wc-` or `react-` followed by your design system's name, such as `wc-acme.html`, so the results group it with the others.
 
 Then install your design system with npm and run `PAGE=wc-acme npm test`.
+
+### Run the tests on every pull request
+
+In your own repo, a GitHub Actions workflow like this runs the tests whenever someone opens a pull request:
+
+```yaml
+name: Performance tests
+on: pull_request
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+        env:
+          PAGE: wc-acme
+```
+
+CI machines are often slower than a laptop, so a component can pass on your laptop and go over a time limit in CI. Run the tests in CI a few times before you set the limits. The test that compares 125 options with 250 is the most reliable there, because both runs slow down together.
+
+This repo's own workflow, in `.github/workflows/test.yml`, runs the tests against every page with `REPORT_ONLY=1`. It fails only if a page stops working, and shows each design system's numbers on the run's summary page.
+
+### See a page in the browser
 
 To see a page yourself, run `npx vite` and open, for example, `http://localhost:5173/pages/wc-acme.html`. In the browser console, `__build()` adds the select and checkboxes to the page.
 

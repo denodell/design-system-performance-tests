@@ -1,0 +1,46 @@
+# Checks that every test page still works, and reports each design system's numbers.
+#
+# The design systems here are what the tests measure, not code this repo can fix, so the
+# numbers don't fail the run. A page that breaks, such as a select that no longer opens, does.
+name: Test pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pages:
+    runs-on: ubuntu-latest
+    outputs:
+      pages: ${{ steps.list.outputs.pages }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        run: echo "pages=$(ls pages/*.html | xargs -n1 basename -s .html | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        page: ${{ fromJson(needs.pages.outputs.pages) }}
+    env:
+      # The tests use Playwright's Chrome, so skip the one the comparison script downloads.
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: echo "### ${{ matrix.page }}" >> "$GITHUB_STEP_SUMMARY"
+      - run: npm test
+        env:
+          PAGE: ${{ matrix.page }}
+          REPORT_ONLY: "1"
