@@ -1,7 +1,8 @@
 import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
-  testDir: "tests",
+  // Each design system folder has its own performance.spec.js.
+  testDir: "design-systems",
   // The CPU is slowed down four times, so each test needs longer than Playwright's default.
   timeout: 180_000,
   // One test at a time, so tests don't slow each other down.

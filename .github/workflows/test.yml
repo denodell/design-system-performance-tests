@@ -1,8 +1,8 @@
-# Checks that every test page still works, and reports each design system's numbers.
+# Checks that every design system's test page still works, and reports each one's measurements.
 #
 # The design systems here are what the tests measure, not code this repo can fix, so the
-# numbers don't fail the run. A page that breaks, such as a select that no longer opens, does.
-name: Test pages
+# measurements don't fail the run. A page that breaks, such as a dropdown that no longer opens, does.
+name: Test design systems
 
 on:
   push:
@@ -11,23 +11,23 @@ on:
   workflow_dispatch:
 
 jobs:
-  pages:
+  list:
     runs-on: ubuntu-latest
     outputs:
-      pages: ${{ steps.list.outputs.pages }}
+      folders: ${{ steps.list.outputs.folders }}
     steps:
       - uses: actions/checkout@v5
       - id: list
-        run: echo "pages=$(ls pages/*.html | xargs -n1 basename -s .html | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
+        run: echo "folders=$(ls -d design-systems/*/ | xargs -n1 basename | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
 
   test:
-    needs: pages
+    needs: list
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        page: ${{ fromJson(needs.pages.outputs.pages) }}
+        folder: ${{ fromJson(needs.list.outputs.folders) }}
     env:
       # The tests use Playwright's Chrome, so skip the one the comparison script downloads.
       PUPPETEER_SKIP_DOWNLOAD: "true"
@@ -39,8 +39,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: echo "### ${{ matrix.page }}" >> "$GITHUB_STEP_SUMMARY"
-      - run: npm test
+      - run: echo "### ${{ matrix.folder }}" >> "$GITHUB_STEP_SUMMARY"
+      - run: npx playwright test design-systems/${{ matrix.folder }}
         env:
-          PAGE: ${{ matrix.page }}
           REPORT_ONLY: "1"

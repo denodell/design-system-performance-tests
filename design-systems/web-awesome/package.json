@@ -1,0 +1,10 @@
+{
+  "name": "web-awesome-performance-tests",
+  "private": true,
+  "type": "module",
+  "description": "Performance tests for Web Awesome.",
+  "framework": "Lit",
+  "dependencies": {
+    "@awesome.me/webawesome": "3.14.0"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "ant-design-performance-tests",
+  "private": true,
+  "type": "module",
+  "description": "Performance tests for Ant Design.",
+  "framework": "React",
+  "dependencies": {
+    "antd": "6.6.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  }
+}

@@ -3,77 +3,115 @@
 Tests how quickly design system components handle two tasks that real apps do all the time, in Chrome:
 
 - Opening a country selector with 249 options
-- Checking 100 checkboxes at once, like a "select all" checkbox in a table showing 100 rows
+- Checking 100 checkboxes at once, like a "select all" checkbox above a list of 100 messages
 
-The repo has pages for ten design systems: Mantine, Ant Design, MUI and React Spectrum (React), and Carbon, Fluent, Web Awesome, UI5, Spectrum Web Components and Ionic (web components). You can add your own.
+Each design system has its own folder in `design-systems`. There are ten so far: Mantine, Ant Design, Material UI and React Spectrum, built with React, and Carbon, Fluent, Web Awesome, UI5, Spectrum Web Components and Ionic, built with web components. You can add your own by copying a folder.
 
 You need Node.js 22 or later. Start with:
 
 ```sh
 npm install
+npx playwright install chromium
 ```
 
-## Test your design system
+## Run the tests
 
-The tests in `tests/performance.spec.js` run against one page and pass or fail, so you can run them on every pull request. With the CPU slowed down four times to roughly match a mid-range phone, they check that:
+The tests check that, with the CPU slowed down four times to roughly match a mid-range phone:
 
-- the select opens in under 300ms, and the screen never freezes for more than 100ms while it opens
-- opening the select with 250 options takes no more than about twice as long as with 125
-- checking all 100 checkboxes takes under 300ms, and the screen never freezes for more than 100ms
+- the country selector opens in under 300ms, and the UI never stops responding for more than 100ms while it opens
+- opening it with 250 options takes no more than about twice as long as with 125
+- checking all 100 checkboxes takes under 300ms, and the UI never stops responding for more than 100ms
 
-The limits are at the top of the test file. Change them to suit your own components. To print the numbers without failing on the limits, set `REPORT_ONLY=1`.
-
-Run the tests against a page by its file name:
+Run them for every design system:
 
 ```sh
-npx playwright install chromium
-PAGE=wc-carbon npm test
+npm test
 ```
 
-### Add a page for your design system
+Or for just one, by its folder name:
 
-Each design system needs two files.
+```sh
+npx playwright test design-systems/ionic
+```
 
-1. A setup file in `src`, which tells the page how to draw your select and checkboxes. For web components it looks like this:
+To print the measurements without failing on the limits, set `REPORT_ONLY=1`. The tests still fail if the page stops working, such as a dropdown that doesn't open.
 
-   ```js
-   // src/wc/nettle.js
-   import "@nettle/components/select.js";
-   import "@nettle/components/checkbox.js";
-   import { setup } from "./common.js";
+## Add your design system
 
-   setup({
-     name: "Nettle",
-     // HTML for a select with n options. Give the select id="dd".
-     select: (n) => `<nettle-select id="dd">${Array.from({ length: n }, (_, i) =>
-       `<nettle-option value="v${i}">Option ${i}</nettle-option>`).join("")}</nettle-select>`,
-     // HTML for checkbox number i.
-     checkbox: (i) => `<nettle-checkbox>Item ${i}</nettle-checkbox>`,
-     // What a user clicks to open the select.
-     clickToOpen: "#dd",
-     // An option that appears once the menu is open.
-     optionInMenu: "nettle-option[value=v5]",
-     // Every checkbox, and how to check one.
-     checkboxes: "nettle-checkbox",
-     check: (c) => (c.checked = true),
-   });
-   ```
+Every folder in `design-systems` has the same four files:
 
-   For React, use `rsetup` from `src/react/rcommon.js` and pass `Select` and `Checkbox` components instead. `src/react/mui.js` is a short example. Both setup files explain every option at the top.
+```
+design-systems/
+└── nettle/
+    ├── index.html            the test page
+    ├── setup.js              how to build your dropdown and checkboxes
+    ├── performance.spec.js   runs the tests, with any limits of your own
+    └── package.json          your design system's npm packages
+```
 
-2. A page in `pages` that loads the setup file:
+The easiest way to start is to copy the folder of a design system built the same way as yours, such as `carbon` for web components or `material-ui` for React, and give it your design system's name. Then change each file.
 
-   ```html
-   <!doctype html>
-   <meta charset="utf-8">
-   <title>Nettle</title>
-   <body>
-   <script type="module" src="../src/wc/nettle.js"></script>
-   ```
+**`index.html`** loads `setup.js`. Its `<title>` is the name shown in the results.
 
-   The `<title>` is the name shown in the results. Name the file `wc-` or `react-` followed by your design system's name, such as `wc-nettle.html`, so the results group it with the others.
+```html
+<!doctype html>
+<meta charset="utf-8">
+<title>Nettle</title>
+<body>
+<script type="module" src="./setup.js"></script>
+```
 
-Then install your design system with npm and run `PAGE=wc-nettle npm test`.
+**`setup.js`** tells the test page how to build your dropdown and checkboxes. For web components it looks like this:
+
+```js
+import "@nettle/components/select.js";
+import "@nettle/components/checkbox.js";
+import { setup } from "../../shared/web-components.js";
+
+setup({
+  // HTML for a dropdown with n options. Give the dropdown id="dd".
+  select: (n) => `<nettle-select id="dd">${Array.from({ length: n }, (_, i) =>
+    `<nettle-option value="v${i}">Option ${i}</nettle-option>`).join("")}</nettle-select>`,
+  // HTML for checkbox number i.
+  checkbox: (i) => `<nettle-checkbox>Item ${i}</nettle-checkbox>`,
+  // What a user clicks to open the dropdown.
+  clickToOpen: "#dd",
+  // An option that appears once the dropdown is open.
+  optionInMenu: "nettle-option[value=v5]",
+  // Every checkbox, and how to check one.
+  checkboxes: "nettle-checkbox",
+  check: (c) => (c.checked = true),
+});
+```
+
+For React, import `setup` from `../../shared/react.js` instead, and pass `Select` and `Checkbox` components. `design-systems/material-ui/setup.js` is a short example. Both files in `shared` explain every option at the top.
+
+**`performance.spec.js`** runs the shared tests against your folder. It usually doesn't need changing. To set limits for your design system only, pass them in:
+
+```js
+import { testDesignSystem } from "../../shared/tests.js";
+
+testDesignSystem(import.meta.dirname, { openMs: 200, unresponsiveMs: 50 });
+```
+
+The limits you can set are `openMs`, `selectAllMs`, `unresponsiveMs` and `doublingRatio`. The defaults are at the top of `shared/tests.js`.
+
+**`package.json`** lists your design system's npm packages, at the versions you want to test. `framework` is shown next to its name in the comparison tables.
+
+```json
+{
+  "name": "nettle-performance-tests",
+  "private": true,
+  "type": "module",
+  "description": "Performance tests for Nettle.",
+  "framework": "Lit",
+  "dependencies": {
+    "@nettle/components": "4.2.0"
+  }
+}
+```
+
+Then run `npm install` and `npx playwright test design-systems/nettle`.
 
 ### Run the tests on every pull request
 
@@ -92,34 +130,34 @@ jobs:
           node-version: 22
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm test
+      - run: npx playwright test design-systems/nettle
         env:
-          PAGE: wc-nettle
+          PUPPETEER_SKIP_DOWNLOAD: "true"
 ```
 
 CI machines are often slower than a laptop, so a component can pass on your laptop and go over a time limit in CI. Run the tests in CI a few times before you set the limits. The test that compares 125 options with 250 is the most reliable there, because both runs slow down together.
 
-This repo's own workflow, in `.github/workflows/test.yml`, runs the tests against every page with `REPORT_ONLY=1`. It fails only if a page stops working, and shows each design system's numbers on the run's summary page.
+This repo's own workflow, in `.github/workflows/test.yml`, runs each design system as a separate job with `REPORT_ONLY=1`. It fails only if a page stops working, and shows each design system's measurements on the run's summary page.
 
 ### See a page in the browser
 
-To see a page yourself, run `npx vite` and open, for example, `http://localhost:5173/pages/wc-nettle.html`. In the browser console, `__build()` adds the select and checkboxes to the page.
+To see a page yourself, run `npx vite` and open, for example, `http://localhost:5173/design-systems/nettle/index.html`. In the browser console, `__build()` adds the dropdown and checkboxes to the page.
 
 ## Compare design systems
 
-`npm start` builds every page and measures each design system, then prints tables comparing them. These are the numbers in the blog post.
+`npm start` builds every page and measures each design system, then prints tables comparing them. These are the measurements in the blog post.
 
 ```sh
 npm start
 ```
 
-`npm install` downloads its own copy of Chrome, so the results don't depend on the browser you have installed. A full run takes around an hour and a half. Close other apps first, since anything else using the CPU makes the numbers higher. The tables are printed at the end and saved to `results.json`.
+`npm install` downloads its own copy of Chrome, so the results don't depend on the browser you have installed. A full run takes around an hour and a half. Close other apps first, since anything else using the CPU makes the measurements higher. The tables are printed at the end and saved to `results.json`.
 
 ```sh
-RUNS=5 npm run measure                    # more runs per design system
-THROTTLE=1 npm run measure                # full CPU speed
-ONLY=wc-ionic,wc-fluent npm run measure   # just these pages
-EXTRAS=0 npm run measure                  # just the two tasks, which takes around 30 minutes
+RUNS=5 npm run measure                 # more runs per design system
+THROTTLE=1 npm run measure             # full CPU speed
+ONLY=ionic,fluent npm run measure      # just these folders
+EXTRAS=0 npm run measure               # just the two tasks, which takes around 30 minutes
 ```
 
 `npm run measure` reuses the last build. Run `npm start` again after changing a package version.

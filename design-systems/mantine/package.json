@@ -1,0 +1,13 @@
+{
+  "name": "mantine-performance-tests",
+  "private": true,
+  "type": "module",
+  "description": "Performance tests for Mantine.",
+  "framework": "React",
+  "dependencies": {
+    "@mantine/core": "9.7.1",
+    "@mantine/hooks": "9.7.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  }
+}

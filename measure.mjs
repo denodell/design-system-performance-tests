@@ -1,17 +1,18 @@
 // Opens each design system's test page in Chrome and measures two tasks:
-// opening a select with 249 options, and checking 100 checkboxes at once.
+// opening a country selector with 249 options, and checking 100 checkboxes at once.
 // Each number is how long the main thread stayed busy afterwards, as the median of several runs.
 //
 // It also measures:
-// - each select opening with 125 options and then 250, to show whether twice the options
-//   takes about twice as long, or much longer
-// - Ant Design selecting all 100 rows with animations turned off, to show how much of
+// - Ionic and Fluent opening with 50 options, to show how the time grows with the list
+// - each country selector opening with 125 options and then 250, to show whether twice the
+//   options takes about twice as long, or much longer
+// - Ant Design checking all 100 checkboxes with animations turned off, to show how much of
 //   that time goes on the checkbox animation
 //
 // Settings (environment variables):
 //   RUNS=3        how many times to run each page
 //   THROTTLE=4    how much to slow the CPU down (1 = full speed)
-//   ONLY=wc-ionic,react-mui   run only these pages
+//   ONLY=ionic,material-ui   run only these design systems, by folder name
 //   EXTRAS=0      skip the extra measurements above
 
 import http from "node:http";
@@ -26,15 +27,18 @@ const root = path.join(import.meta.dirname, "dist");
 // Uses the Chrome that `npm install` downloaded. Set DS_PERF_CHROME to use a different one.
 const chromePath = process.env.DS_PERF_CHROME || undefined;
 
-// Every page in the pages folder, named by its <title>.
-const pagesDir = path.join(import.meta.dirname, "pages");
-const pages = fs.readdirSync(pagesDir)
-  .filter((file) => file.endsWith(".html"))
-  .map((file) => {
-    const html = fs.readFileSync(path.join(pagesDir, file), "utf8");
-    return [file.replace(".html", ""), html.match(/<title>(.*?)<\/title>/)?.[1] ?? file];
+// Every folder in design-systems. The name is the <title> of its index.html, and the
+// framework is the "framework" field in its package.json.
+const designSystemsDir = path.join(import.meta.dirname, "design-systems");
+const designSystems = fs.readdirSync(designSystemsDir)
+  .filter((folder) => fs.existsSync(path.join(designSystemsDir, folder, "index.html")))
+  .map((folder) => {
+    const html = fs.readFileSync(path.join(designSystemsDir, folder, "index.html"), "utf8");
+    const pkgFile = path.join(designSystemsDir, folder, "package.json");
+    const pkg = fs.existsSync(pkgFile) ? JSON.parse(fs.readFileSync(pkgFile, "utf8")) : {};
+    return { folder, name: html.match(/<title>(.*?)<\/title>/)?.[1] ?? folder, framework: pkg.framework ?? "" };
   })
-  .filter(([page]) => !process.env.ONLY || process.env.ONLY.split(",").includes(page));
+  .filter(({ folder }) => !process.env.ONLY || process.env.ONLY.split(",").includes(folder));
 
 if (!fs.existsSync(root)) {
   console.error("No dist folder. Run `npm run build` first, or `npm start` to build and measure.");
@@ -61,9 +65,9 @@ async function busy(cdp) {
 }
 
 // Run `action`, then measure two things while the page finishes responding:
-// how long the main thread stayed busy in total, and the longest freeze, meaning the
-// longest frame the browser took to draw. Chrome only reports frames over 50ms, so a
-// freeze of 0 means every frame was drawn in under 50ms. Listening for slow frames adds
+// how long the main thread stayed busy in total, and the longest time the UI stopped
+// responding, meaning the longest frame the browser took to draw. Chrome only reports frames
+// over 50ms, so 0 means every frame was drawn in under 50ms. Listening for slow frames adds
 // no work to the page. Waits longer when the CPU is slowed down.
 async function measure(page, cdp, action, settle) {
   await page.evaluate(() => {
@@ -151,19 +155,19 @@ async function runOnce(browser, page, query, noAnimations) {
   await cdp.send("Performance.enable");
   if (THROTTLE > 1) await cdp.send("Emulation.setCPUThrottlingRate", { rate: THROTTLE });
 
-  await tab.goto(`${origin}/pages/${page}.html${query}`, { waitUntil: "networkidle0", timeout: 120000 });
+  await tab.goto(`${origin}/design-systems/${page}/index.html${query}`, { waitUntil: "networkidle0", timeout: 120000 });
   await tab.waitForFunction("window.__ready", { timeout: 60000 });
   await pause(800);
   await tab.evaluate(() => window.__build());
   await pause(2500 * THROTTLE);
 
   const openSel = await tab.evaluate(() => window.__openSel);
-  // Make sure the select is on the page before starting the clock.
+  // Make sure the country selector is on the page before starting the clock.
   const deadline = Date.now() + 10000 * THROTTLE;
   while (!(await isShown(tab, openSel)) && Date.now() < deadline) await pause(250);
 
   const open = await measure(tab, cdp, async () => {
-    if (!(await clickElement(tab, openSel, 5000))) throw new Error("couldn't find the select to click");
+    if (!(await clickElement(tab, openSel, 5000))) throw new Error("couldn't find the country selector to click");
   }, 1500);
 
   const optionSel = await tab.evaluate(() => window.__optionSel);
@@ -195,7 +199,7 @@ async function run(page, query, noAnimations = false) {
     }
   }
   if (results.some((r) => !r.optionsVisible)) {
-    console.warn(`  ${page}: the menu hadn't finished opening when the time was read, so its number may be too low.`);
+    console.warn(`  ${page}: the dropdown hadn't finished opening when the time was read, so its number may be too low.`);
   }
   return {
     open: median(results.map((r) => r.open.busy)),
@@ -206,7 +210,7 @@ async function run(page, query, noAnimations = false) {
 }
 
 const ms = (n) => `${Math.round(n).toLocaleString("en-US")}ms`;
-const freezeMs = (n) => (n > 0 ? ms(n) : "under 50ms");
+const unresponsiveMs = (n) => (n > 0 ? ms(n) : "Under 50ms");
 const browser = await puppeteer.launch({ headless: true, executablePath: chromePath, args: ["--no-sandbox"] });
 const chromeVersion = await browser.version();
 await browser.close();
@@ -224,10 +228,10 @@ console.log(`Browser: ${chromeVersion}, CPU slowed down ${THROTTLE}x, median of 
 
 const results = {};
 const failed = [];
-for (const [page, name] of pages) {
+for (const { folder: page, name, framework } of designSystems) {
   process.stdout.write(`Measuring ${name}...\n`);
   try {
-    results[page] = { name, ...(await run(page, "?n=249&m=100")) };
+    results[page] = { name, framework, ...(await run(page, "?n=249&m=100")) };
   } catch (error) {
     console.warn(`  Skipped ${name}: ${error.message}`);
     failed.push(name);
@@ -238,7 +242,7 @@ const extras = process.env.EXTRAS !== "0";
 
 // Ionic and Fluent again with 50 options, to show how Ionic's time grows with the list.
 const small = {};
-for (const page of ["wc-ionic", "wc-fluent"].filter((p) => extras && results[p])) {
+for (const page of ["ionic", "fluent"].filter((p) => extras && results[p])) {
   process.stdout.write(`Measuring ${results[page].name} with 50 options...\n`);
   try {
     const r = await run(page, "?n=50&m=0");
@@ -248,8 +252,8 @@ for (const page of ["wc-ionic", "wc-fluent"].filter((p) => extras && results[p])
   }
 }
 
-// Every select with 125 options and then 250. Twice the options should take up to about
-// twice as long. Much more than that means the select repeats work for every option.
+// Every country selector with 125 options and then 250. Twice the options should take up to
+// about twice as long. Much more than that means it repeats work for every option.
 const doubling = {};
 for (const page of Object.keys(results).filter(() => extras)) {
   process.stdout.write(`Measuring ${results[page].name} with 125 and 250 options...\n`);
@@ -262,13 +266,13 @@ for (const page of Object.keys(results).filter(() => extras)) {
   }
 }
 
-// Ant Design selecting all 100 rows with animations turned off.
+// Ant Design checking all 100 checkboxes with animations turned off.
 let noAnimations = null;
-if (extras && results["react-antd"]) {
-  process.stdout.write("Measuring Ant Design selecting all rows with animations off...\n");
+if (extras && results["ant-design"]) {
+  process.stdout.write("Measuring Ant Design checking all the checkboxes with animations off...\n");
   try {
-    const r = await run("react-antd", "?n=10&m=100", true);
-    noAnimations = { selectAll: r.selectAll, withAnimations: results["react-antd"].selectAll };
+    const r = await run("ant-design", "?n=10&m=100", true);
+    noAnimations = { selectAll: r.selectAll, withAnimations: results["ant-design"].selectAll };
   } catch (error) {
     console.warn(`  Skipped: ${error.message}`);
   }
@@ -276,22 +280,22 @@ if (extras && results["react-antd"]) {
 
 server.close();
 
-const table = (prefix, title, include = (page) => page.startsWith(prefix)) => {
-  const rows = Object.entries(results).filter(([page]) => include(page));
-  if (!rows.length) return;
+// The same two tables as the blog post, fastest first.
+const table = (title, column, time, unresponsive) => {
   console.log(`\n${title}\n`);
-  console.log("| Design system | Opening a country selector | Longest freeze | Selecting all 100 rows | Longest freeze |");
-  console.log("| --- | --- | --- | --- | --- |");
-  for (const [, r] of rows.sort((a, b) => a[1].open - b[1].open)) {
-    console.log(`| ${r.name} | ${ms(r.open)} | ${freezeMs(r.openFreeze)} | ${ms(r.selectAll)} | ${freezeMs(r.selectAllFreeze)} |`);
+  console.log(`| Design system | Framework | ${column} | Longest time unresponsive |`);
+  console.log("| --- | --- | --- | --- |");
+  for (const r of Object.values(results).sort((a, b) => a[time] - b[time])) {
+    console.log(`| ${r.name} | ${r.framework} | ${ms(r[time])} | ${unresponsiveMs(r[unresponsive])} |`);
   }
 };
-table("react-", "React design systems");
-table("wc-", "Web component design systems");
-table("", "Other design systems", (page) => !page.startsWith("react-") && !page.startsWith("wc-"));
+if (Object.keys(results).length) {
+  table("Opening a country selector with 249 options", "Time to open", "open", "openFreeze");
+  table("Checking 100 checkboxes at once", "Time to select", "selectAll", "selectAllFreeze");
+}
 if (Object.keys(small).length) {
   console.log("\nOpening with 50 options");
-  for (const [page, value] of Object.entries(small)) console.log(`  ${results[page].name}: ${ms(value.open)}, longest freeze ${freezeMs(value.freeze)}`);
+  for (const [page, value] of Object.entries(small)) console.log(`  ${results[page].name}: ${ms(value.open)}, longest time unresponsive ${unresponsiveMs(value.freeze)}`);
 }
 if (Object.keys(doubling).length) {
   console.log("\nOpening with 125 options, then 250");
@@ -302,7 +306,7 @@ if (Object.keys(doubling).length) {
   }
 }
 if (noAnimations) {
-  console.log(`\nAnt Design selecting all 100 rows: ${ms(noAnimations.withAnimations)} with animations, ${ms(noAnimations.selectAll)} without`);
+  console.log(`\nAnt Design checking all 100 checkboxes: ${ms(noAnimations.withAnimations)} with animations, ${ms(noAnimations.selectAll)} without`);
 }
 
 fs.writeFileSync(path.join(import.meta.dirname, "results.json"), JSON.stringify({ chromeVersion, throttle: THROTTLE, runs: RUNS, results, fiftyOptions: small, doubling, noAnimations }, null, 2));

@@ -2,7 +2,10 @@
   "name": "design-system-performance-tests",
   "private": true,
   "type": "module",
-  "description": "Measures how long ten design systems take to open a country selector and to check 100 checkboxes at once.",
+  "description": "Measures how long design systems take to open a country selector and to check 100 checkboxes at once.",
+  "workspaces": [
+    "design-systems/*"
+  ],
   "scripts": {
     "build": "vite build",
     "measure": "node measure.mjs",
@@ -10,25 +13,7 @@
     "test": "playwright test"
   },
   "dependencies": {
-    "@adobe/react-spectrum": "3.47.6",
-    "@awesome.me/webawesome": "3.14.0",
-    "@carbon/web-components": "2.65.0",
-    "@emotion/react": "11.14.0",
-    "@emotion/styled": "11.14.1",
-    "@fluentui/tokens": "1.0.0-alpha.24",
-    "@fluentui/web-components": "3.1.3",
-    "@ionic/core": "9.0.7",
-    "@mantine/core": "9.7.1",
-    "@mantine/hooks": "9.7.1",
-    "@microsoft/fast-element": "3.0.4",
-    "@microsoft/focusgroup-polyfill": "^1.6.0",
-    "@mui/material": "9.5.0",
-    "@spectrum-web-components/bundle": "1.12.4",
-    "@ui5/webcomponents": "2.27.2",
-    "antd": "6.6.5",
     "puppeteer": "25.13.0",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
     "vite": "8.3.4"
   },
   "devDependencies": {

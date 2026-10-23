@@ -1,0 +1,14 @@
+{
+  "name": "material-ui-performance-tests",
+  "private": true,
+  "type": "module",
+  "description": "Performance tests for Material UI.",
+  "framework": "React",
+  "dependencies": {
+    "@emotion/react": "11.14.0",
+    "@emotion/styled": "11.14.1",
+    "@mui/material": "9.5.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  }
+}
