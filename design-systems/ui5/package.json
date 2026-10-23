@@ -1,0 +1,10 @@
+{
+  "name": "ui5-performance-tests",
+  "private": true,
+  "type": "module",
+  "description": "Performance tests for UI5.",
+  "framework": "SAP's own",
+  "dependencies": {
+    "@ui5/webcomponents": "2.27.2"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "ionic-performance-tests",
+  "private": true,
+  "type": "module",
+  "description": "Performance tests for Ionic.",
+  "framework": "Stencil",
+  "dependencies": {
+    "@ionic/core": "9.0.7"
+  }
+}

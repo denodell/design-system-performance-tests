@@ -1,0 +1,10 @@
+{
+  "name": "carbon-performance-tests",
+  "private": true,
+  "type": "module",
+  "description": "Performance tests for Carbon.",
+  "framework": "Lit",
+  "dependencies": {
+    "@carbon/web-components": "2.65.0"
+  }
+}

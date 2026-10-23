@@ -1,0 +1,10 @@
+{
+  "name": "spectrum-web-components-performance-tests",
+  "private": true,
+  "type": "module",
+  "description": "Performance tests for Spectrum Web Components.",
+  "framework": "Lit",
+  "dependencies": {
+    "@spectrum-web-components/bundle": "1.12.4"
+  }
+}
