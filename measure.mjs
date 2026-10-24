@@ -44,6 +44,14 @@ if (!fs.existsSync(root)) {
   console.error("No dist folder. Run `npm run build` first, or `npm start` to build and measure.");
   process.exit(1);
 }
+// A build from before a design system was added, or from an older version of this repo,
+// won't have its page, so every run would time out waiting for it.
+const unbuilt = designSystems.filter(({ folder }) => !fs.existsSync(path.join(root, "design-systems", folder, "index.html")));
+if (unbuilt.length) {
+  console.error(`The build in dist is out of date. It's missing ${unbuilt.map((d) => d.name).join(", ")}.`);
+  console.error("Run `npm run build` first, or `npm start` to build and measure.");
+  process.exit(1);
+}
 
 const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml", ".woff2": "font/woff2", ".json": "application/json" };
 const server = http.createServer((req, res) => {
