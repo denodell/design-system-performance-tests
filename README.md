@@ -135,7 +135,7 @@ jobs:
           PUPPETEER_SKIP_DOWNLOAD: "true"
 ```
 
-CI machines are often slower than a laptop, so a component can pass on your laptop and go over a time limit in CI. Run the tests in CI a few times before you set the limits. The test that compares 125 options with 250 is the most reliable there, because both runs slow down together.
+CI machines are often slower than a development machine, so a component can pass locally but go over a time limit in CI. Run the tests in CI a few times first before you set the limits. The test that compares 125 options with 250 is the most reliable there, because both runs slow down together.
 
 This repo's own workflow, in `.github/workflows/test.yml`, runs each design system as a separate job with `REPORT_ONLY=1`. It fails only if a page stops working, and shows each design system's measurements on the run's summary page.
 
