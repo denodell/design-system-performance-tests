@@ -1,0 +1,15 @@
+{
+  "name": "shadcn-radix-ui-performance-tests",
+  "private": true,
+  "type": "module",
+  "description": "Performance tests for shadcn/ui's Nova style, built on Radix UI.",
+  "framework": "React",
+  "dependencies": {
+    "radix-ui": "1.8.1",
+    "class-variance-authority": "0.7.1",
+    "cn": "0.5.2",
+    "lucide-react": "1.72.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  }
+}

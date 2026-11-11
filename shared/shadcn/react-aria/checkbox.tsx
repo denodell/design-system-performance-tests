@@ -1,0 +1,43 @@
+"use client"
+
+import { cn } from "cn"
+import { CheckIcon } from "lucide-react"
+import {
+  Checkbox as CheckboxPrimitive,
+  composeRenderProps,
+  type CheckboxProps,
+} from "react-aria-components"
+
+
+function Checkbox({ className, children, ...props }: CheckboxProps) {
+  return (
+    <CheckboxPrimitive
+      data-slot="checkbox"
+      className={cn(
+        "cn-checkbox cn-checkbox-aria peer relative shrink-0 outline-none after:absolute after:-inset-x-3 after:-inset-y-2 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
+        className
+      )}
+      {...props}
+    >
+      {composeRenderProps(
+        children,
+        (children, { isSelected, isIndeterminate }) => (
+          <>
+            <span
+              data-slot="checkbox-indicator"
+              className="cn-checkbox-indicator grid place-content-center text-current transition-none"
+            >
+              {(isSelected || isIndeterminate) && (
+                <CheckIcon
+                />
+              )}
+            </span>
+            {children}
+          </>
+        )
+      )}
+    </CheckboxPrimitive>
+  )
+}
+
+export { Checkbox }
